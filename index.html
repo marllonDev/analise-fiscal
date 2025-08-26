@@ -1,0 +1,389 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Análise Interativa das Contas Públicas (2019-2022)</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&display=swap" rel="stylesheet">
+    <!-- Chosen Palette: Calm Clarity -->
+    <!-- Application Structure Plan: A thematic, top-down narrative structure was chosen to guide the user through a complex economic story. It starts with the central conflict (Primary Surplus vs. Nominal Deficit) as a hook, then chronologically explores the primary result's evolution. It then deconstructs the key year (2022) by explaining its drivers, analyzes the related topic of public debt, and concludes with a synthesis. This non-linear approach, focusing on themes rather than mirroring the report's structure, enhances understanding by building the narrative step-by-step, making the complex information digestible and engaging for a general audience. Key interaction involves filtering the main chart by year to get specific context, directly connecting the visual data to its explanation. -->
+    <!-- Visualization & Content Choices: 1. Key Metrics (2022): Goal: Compare. Method: Large stat cards (HTML/CSS). Interaction: None. Justification: High-impact introduction to the core paradox. 2. Primary Result (2019-22): Goal: Show Change. Method: Bar Chart (Chart.js/Canvas). Interaction: Buttons to highlight a year and update a contextual text block. Justification: Visually represents the 'V-shaped' recovery and allows focused exploration. 3. Surplus Drivers: Goal: Organize/Inform. Method: Grid of info cards (HTML/CSS). Interaction: None. Justification: Decomposes complex factors into clear, separate concepts. 4. Public Debt/GDP (2019-22): Goal: Show Change. Method: Line Chart (Chart.js/Canvas). Interaction: Hover tooltips. Justification: Standard and effective for showing trends over time. All choices adhere to the NO SVG/Mermaid constraint. -->
+    <!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #FDFBF7;
+            color: #4A4A4A;
+        }
+        .chart-container {
+            position: relative;
+            width: 100%;
+            max-width: 800px;
+            margin-left: auto;
+            margin-right: auto;
+            height: 300px;
+            max-height: 40vh;
+        }
+        @media (min-width: 768px) {
+            .chart-container {
+                height: 400px;
+            }
+        }
+        .nav-button {
+            transition: all 0.3s ease;
+        }
+        .nav-button:hover {
+            background-color: #EAE3D9;
+            color: #2c2c2c;
+        }
+        .stat-card {
+            border: 1px solid #EAE3D9;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        .stat-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.05), 0 4px 6px -4px rgb(0 0 0 / 0.05);
+        }
+        .year-btn {
+            transition: all 0.2s ease-in-out;
+        }
+        .year-btn.active {
+            background-color: #6B8EAD;
+            color: white;
+            transform: scale(1.05);
+        }
+        .year-btn:not(.active):hover {
+            background-color: #EAE3D9;
+        }
+        .info-card {
+             background-color: #FFFFFF;
+             border: 1px solid #EAE3D9;
+        }
+    </style>
+</head>
+<body class="antialiased">
+
+    <header class="bg-white/80 backdrop-blur-lg sticky top-0 z-10 border-b border-gray-200">
+        <nav class="container mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex items-center justify-between h-16">
+                <h1 class="text-xl font-bold text-gray-800">Análise Fiscal 2019-2022</h1>
+                <div class="hidden sm:flex sm:space-x-2">
+                    <a href="#visao-geral" class="nav-button text-gray-600 font-medium px-3 py-2 rounded-md text-sm">Visão Geral</a>
+                    <a href="#trajetoria" class="nav-button text-gray-600 font-medium px-3 py-2 rounded-md text-sm">Trajetória</a>
+                    <a href="#fatores" class="nav-button text-gray-600 font-medium px-3 py-2 rounded-md text-sm">Fatores de 2022</a>
+                    <a href="#divida" class="nav-button text-gray-600 font-medium px-3 py-2 rounded-md text-sm">Dívida Pública</a>
+                </div>
+            </div>
+        </nav>
+    </header>
+
+    <main class="container mx-auto px-4 sm:px-6 lg:px-8 py-8 md:py-12">
+
+        <section id="visao-geral" class="text-center mb-16">
+            <h2 class="text-3xl md:text-4xl font-bold text-gray-900 mb-2">As Contas Públicas em 2022: Superávit ou Déficit?</h2>
+            <p class="text-lg text-gray-600 max-w-3xl mx-auto">A resposta depende da métrica. Em 2022, o Brasil registrou o primeiro superávit primário em 8 anos, mas a conta geral, incluindo os juros da dívida, permaneceu profundamente negativa. Explore os dois lados dessa história.</p>
+            
+            <div class="mt-10 grid grid-cols-1 md:grid-cols-2 gap-8 max-w-4xl mx-auto">
+                <div class="stat-card bg-white p-6 rounded-xl shadow-sm">
+                    <h3 class="text-lg font-semibold text-gray-700">Resultado Primário (Setor Público)</h3>
+                    <p class="text-4xl font-bold text-[#5D9C59] mt-2">+ R$ 126 Bilhões</p>
+                    <p class="text-sm text-gray-500 mt-2">Receitas superaram despesas (sem contar juros). Primeiro resultado positivo desde 2013.</p>
+                </div>
+                <div class="stat-card bg-white p-6 rounded-xl shadow-sm">
+                    <h3 class="text-lg font-semibold text-gray-700">Resultado Nominal (Setor Público)</h3>
+                    <p class="text-4xl font-bold text-[#D86450] mt-2">- R$ 460,4 Bilhões</p>
+                    <p class="text-sm text-gray-500 mt-2">A conta final, após pagar R$ 586,4 bi em juros da dívida. A dívida total aumentou.</p>
+                </div>
+            </div>
+        </section>
+
+        <hr class="my-16 border-gray-200">
+
+        <section id="trajetoria" class="mb-16">
+            <div class="text-center mb-10">
+                <h2 class="text-3xl font-bold text-gray-900">A Trajetória do Resultado Primário</h2>
+                <p class="text-lg text-gray-600 max-w-3xl mx-auto mt-2">A jornada fiscal do Governo Central entre 2019 e 2022 mostra uma recuperação em "V", partindo de um déficit, aprofundando-se com a pandemia e culminando em um superávit. Selecione um ano para ver os detalhes.</p>
+            </div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-5 gap-8 items-center">
+                <div class="lg:col-span-3">
+                    <div class="bg-white p-4 rounded-xl shadow-sm border border-gray-200">
+                        <div class="chart-container">
+                            <canvas id="primaryResultChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+                <div class="lg:col-span-2">
+                    <div id="year-buttons" class="flex flex-wrap justify-center gap-3 mb-4">
+                        <button class="year-btn px-4 py-2 rounded-lg font-semibold bg-gray-100 border border-gray-200" data-year="2019">2019</button>
+                        <button class="year-btn px-4 py-2 rounded-lg font-semibold bg-gray-100 border border-gray-200" data-year="2020">2020</button>
+                        <button class="year-btn px-4 py-2 rounded-lg font-semibold bg-gray-100 border border-gray-200" data-year="2021">2021</button>
+                        <button class="year-btn px-4 py-2 rounded-lg font-semibold bg-gray-100 border border-gray-200 active" data-year="2022">2022</button>
+                    </div>
+                    <div id="context-box" class="bg-white p-6 rounded-xl border border-gray-200 min-h-[250px]">
+                    </div>
+                </div>
+            </div>
+        </section>
+        
+        <hr class="my-16 border-gray-200">
+
+        <section id="fatores" class="mb-16">
+            <div class="text-center mb-10">
+                <h2 class="text-3xl font-bold text-gray-900">O Que Explica o Superávit de 2022?</h2>
+                <p class="text-lg text-gray-600 max-w-3xl mx-auto mt-2">O resultado positivo de 2022 foi fruto de uma combinação de fatores, muitos deles temporários ou conjunturais, e de intervenções legislativas que alteraram as regras fiscais.</p>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <div class="info-card rounded-xl p-6">
+                    <span class="text-3xl">📈</span>
+                    <h3 class="font-bold text-lg mt-2">Arrecadação Recorde</h3>
+                    <p class="text-gray-600 mt-1">A alta nos preços de commodities como o petróleo e o aumento da inflação impulsionaram a arrecadação de impostos e royalties a níveis históricos.</p>
+                </div>
+                <div class="info-card rounded-xl p-6">
+                    <span class="text-3xl">💰</span>
+                    <h3 class="font-bold text-lg mt-2">Dividendos de Estatais</h3>
+                    <p class="text-gray-600 mt-1">Lucros recordes da Petrobras e de outros bancos públicos resultaram em pagamentos de dividendos vultosos para a União, uma receita não recorrente.</p>
+                </div>
+                <div class="info-card rounded-xl p-6">
+                    <span class="text-3xl">⚖️</span>
+                    <h3 class="font-bold text-lg mt-2">PEC dos Precatórios</h3>
+                    <p class="text-gray-600 mt-1">Uma emenda constitucional adiou o pagamento de dívidas judiciais (precatórios), "aliviando" artificialmente a despesa do ano e empurrando a conta para o futuro.</p>
+                </div>
+                <div class="info-card rounded-xl p-6">
+                     <span class="text-3xl">⛽</span>
+                    <h3 class="font-bold text-lg mt-2">PEC "Kamikaze"</h3>
+                    <p class="text-gray-600 mt-1">Em ano eleitoral, outra emenda permitiu R$ 41,25 bilhões em novos auxílios fora do Teto de Gastos, driblando a principal regra fiscal do país.</p>
+                </div>
+                <div class="info-card rounded-xl p-6">
+                     <span class="text-3xl">📊</span>
+                    <h3 class="font-bold text-lg mt-2">Qualidade do Ajuste</h3>
+                    <p class="text-gray-600 mt-1">A Instituição Fiscal Independente (IFI) apontou que o resultado foi frágil, baseado em receitas voláteis e aumento do gasto recorrente, questionando sua sustentabilidade.</p>
+                </div>
+                 <div class="info-card rounded-xl p-6">
+                     <span class="text-3xl">📉</span>
+                    <h3 class="font-bold text-lg mt-2">Juros Elevados</h3>
+                    <p class="text-gray-600 mt-1">Apesar do superávit primário, o alto custo da Selic para conter a inflação fez a despesa com juros explodir, gerando o déficit nominal bilionário.</p>
+                </div>
+            </div>
+        </section>
+
+        <hr class="my-16 border-gray-200">
+
+        <section id="divida">
+            <div class="text-center mb-10">
+                <h2 class="text-3xl font-bold text-gray-900">E a Dívida Pública?</h2>
+                <p class="text-lg text-gray-600 max-w-3xl mx-auto mt-2">Após atingir um pico histórico na pandemia, a relação Dívida/PIB caiu. Essa melhora, no entanto, foi ajudada pela alta da inflação, que aumenta o PIB nominal (o denominador da conta).</p>
+            </div>
+            <div class="bg-white p-4 rounded-xl shadow-sm border border-gray-200">
+                <div class="chart-container">
+                    <canvas id="debtChart"></canvas>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <footer class="bg-white mt-16 border-t border-gray-200">
+        <div class="container mx-auto px-4 sm:px-6 lg:px-8 py-6 text-center text-gray-500">
+            <p>&copy; 2025 Análise Fiscal Interativa. Aplicação gerada para fins de visualização de dados.</p>
+            <p class="text-sm mt-1">Fonte dos dados: Tesouro Nacional, Banco Central do Brasil, TCU e IFI.</p>
+        </div>
+    </footer>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+
+            const primaryResultData = {
+                labels: ['2019', '2020', '2021', '2022'],
+                values: [-95.1, -743.3, -35.1, 54.9],
+                colors: {
+                    default: 'rgba(107, 142, 173, 0.6)',
+                    hover: 'rgba(107, 142, 173, 1)',
+                    positive: 'rgba(93, 156, 89, 0.6)',
+                    positiveHover: 'rgba(93, 156, 89, 1)',
+                    negative: 'rgba(216, 100, 80, 0.6)',
+                    negativeHover: 'rgba(216, 100, 80, 1)'
+                }
+            };
+            
+            const debtData = {
+                labels: ['2019', '2020', '2021', '2022'],
+                values: [74.3, 88.8, 80.2, 75.4]
+            };
+            
+            const contextText = {
+                '2019': {
+                    title: '2019: Continuidade do Déficit',
+                    body: 'O governo iniciou o mandato com as contas já no vermelho, registrando um déficit primário de R$ 95,1 bilhões. O resultado deu sequência à série de déficits anuais que o país enfrentava desde 2014.'
+                },
+                '2020': {
+                    title: '2020: O Impacto da Pandemia',
+                    body: 'A crise da COVID-19 levou a gastos emergenciais massivos, como o Auxílio Emergencial. Isso, somado à queda na arrecadação, gerou um déficit primário recorde de R$ 743,3 bilhões, o equivalente a 10% do PIB.'
+                },
+                '2021': {
+                    title: '2021: Início da Recuperação',
+                    body: 'Com a retomada gradual da economia e o fim de grande parte dos auxílios, as contas melhoraram significativamente. O déficit caiu para R$ 35,1 bilhões, sinalizando uma rápida reversão do choque pandêmico.'
+                },
+                '2022': {
+                    title: '2022: O Superávit Conjuntural',
+                    body: 'O ano fechou com um superávit primário de R$ 54,9 bilhões, o primeiro em 8 anos. O resultado foi impulsionado por receitas extraordinárias e manobras fiscais, como o adiamento do pagamento de precatórios.'
+                }
+            };
+
+            Chart.defaults.font.family = "'Inter', sans-serif";
+            Chart.defaults.color = '#4A4A4A';
+
+            let primaryChart;
+
+            function createPrimaryResultChart() {
+                const ctx = document.getElementById('primaryResultChart').getContext('2d');
+                primaryChart = new Chart(ctx, {
+                    type: 'bar',
+                    data: {
+                        labels: primaryResultData.labels,
+                        datasets: [{
+                            label: 'Resultado Primário (R$ Bilhões)',
+                            data: primaryResultData.values,
+                            backgroundColor: primaryResultData.values.map(v => v > 0 ? primaryResultData.colors.positive : primaryResultData.colors.negative),
+                            borderColor: primaryResultData.values.map(v => v > 0 ? primaryResultData.colors.positiveHover : primaryResultData.colors.negativeHover),
+                            borderWidth: 1
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: {
+                                display: false
+                            },
+                            tooltip: {
+                                callbacks: {
+                                    label: function(context) {
+                                        return ` R$ ${context.raw.toLocaleString('pt-BR')} Bilhões`;
+                                    }
+                                }
+                            }
+                        },
+                        scales: {
+                            y: {
+                                title: {
+                                    display: true,
+                                    text: 'R$ Bilhões'
+                                },
+                                grid: {
+                                    color: '#EAE3D9'
+                                }
+                            },
+                            x: {
+                                grid: {
+                                    display: false
+                                }
+                            }
+                        }
+                    }
+                });
+            }
+
+            function createDebtChart() {
+                const ctx = document.getElementById('debtChart').getContext('2d');
+                new Chart(ctx, {
+                    type: 'line',
+                    data: {
+                        labels: debtData.labels,
+                        datasets: [{
+                            label: 'Dívida Bruta do Governo Geral (% PIB)',
+                            data: debtData.values,
+                            borderColor: '#6B8EAD',
+                            backgroundColor: 'rgba(107, 142, 173, 0.1)',
+                            fill: true,
+                            tension: 0.1
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                         plugins: {
+                            legend: {
+                                display: false
+                            },
+                            tooltip: {
+                                callbacks: {
+                                    label: function(context) {
+                                        return ` ${context.raw.toLocaleString('pt-BR')}% do PIB`;
+                                    }
+                                }
+                            }
+                        },
+                        scales: {
+                            y: {
+                                title: {
+                                    display: true,
+                                    text: '% do PIB'
+                                },
+                                grid: {
+                                    color: '#EAE3D9'
+                                }
+                            },
+                             x: {
+                                grid: {
+                                    display: false
+                                }
+                            }
+                        }
+                    }
+                });
+            }
+            
+            function updateContextBox(year) {
+                const contextBox = document.getElementById('context-box');
+                const data = contextText[year];
+                contextBox.innerHTML = `
+                    <h3 class="text-xl font-bold text-gray-800 mb-2">${data.title}</h3>
+                    <p class="text-gray-600">${data.body}</p>
+                `;
+            }
+
+            function handleYearButtonClick(e) {
+                const year = e.target.dataset.year;
+                if (!year) return;
+
+                document.querySelectorAll('.year-btn').forEach(btn => btn.classList.remove('active'));
+                e.target.classList.add('active');
+
+                updateContextBox(year);
+
+                const backgroundColors = primaryResultData.values.map((v, i) => {
+                    const currentYear = primaryResultData.labels[i];
+                    if (currentYear === year) {
+                        return v > 0 ? primaryResultData.colors.positiveHover : primaryResultData.colors.negativeHover;
+                    }
+                    return v > 0 ? primaryResultData.colors.positive : primaryResultData.colors.negative;
+                });
+                
+                primaryChart.data.datasets[0].backgroundColor = backgroundColors;
+                primaryChart.update();
+            }
+
+            document.getElementById('year-buttons').addEventListener('click', handleYearButtonClick);
+
+            document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+                anchor.addEventListener('click', function (e) {
+                    e.preventDefault();
+                    document.querySelector(this.getAttribute('href')).scrollIntoView({
+                        behavior: 'smooth'
+                    });
+                });
+            });
+
+            createPrimaryResultChart();
+            createDebtChart();
+            updateContextBox('2022');
+        });
+    </script>
+</body>
+</html>
